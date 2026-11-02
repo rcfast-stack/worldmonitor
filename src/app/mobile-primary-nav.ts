@@ -2,7 +2,7 @@ import type { AppContext } from '@/app/app-context';
 import type { MapView } from '@/components/MapContainer';
 import type { AuthLauncher } from '@/components/AuthLauncher';
 import { AuthHeaderWidget } from '@/components/AuthHeaderWidget';
-import { SITE_VARIANT } from '@/config';
+import { SITE_VARIANT, switchesVariantInPlace } from '@/config';
 import { getAuthState, subscribeAuthState } from '@/services/auth-state';
 import { track, trackMapViewChange, trackThemeChanged } from '@/services/analytics';
 import { getCurrentTheme, setTheme, showToast } from '@/utils';
@@ -189,7 +189,7 @@ export class MobilePrimaryNav {
 
     overlay.addEventListener('click', () => this.closeMenu(), options);
     close.addEventListener('click', () => this.closeMenu(), options);
-    const isLocalDev = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    const isLocalDev = switchesVariantInPlace();
     menu.querySelectorAll<HTMLButtonElement>('.mobile-menu-variant').forEach((button) => {
       button.addEventListener('click', () => {
         const variant = button.dataset.variant;

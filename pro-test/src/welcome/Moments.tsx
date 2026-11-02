@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { t } from '../i18n';
 import depthProofStats from '../generated/depth-stats.json';
-import { DASHBOARD_PATH } from '../routes';
+import { DASHBOARD_PATH, variantDashboardUrl } from '../routes';
 import { SectionHeading } from './SectionHeading';
 
 type ChipTier = 'free' | 'pro';
@@ -15,9 +15,9 @@ interface MomentConfig {
 }
 
 const MOMENTS: MomentConfig[] = [
-  { key: 'm1', twoLineTitle: true, signals: ['RISK', 'FLOW', 'MACRO', 'PRICE'], chips: ['free', 'free', 'pro', 'pro'], href: 'https://finance.worldmonitor.app/dashboard' },
-  { key: 'm2', twoLineTitle: true, signals: ['AIS', 'WEATHER', 'SUPPLY', 'SPREAD'], chips: ['free', 'free', 'pro', 'pro'], href: 'https://commodity.worldmonitor.app/dashboard' },
-  { key: 'm3', twoLineTitle: true, signals: ['AI', 'GRID', 'CLIMATE', 'MARKET'], chips: ['free', 'free', 'pro', 'pro'], href: 'https://tech.worldmonitor.app/dashboard' },
+  { key: 'm1', twoLineTitle: true, signals: ['RISK', 'FLOW', 'MACRO', 'PRICE'], chips: ['free', 'free', 'pro', 'pro'], href: variantDashboardUrl('finance') },
+  { key: 'm2', twoLineTitle: true, signals: ['AIS', 'WEATHER', 'SUPPLY', 'SPREAD'], chips: ['free', 'free', 'pro', 'pro'], href: variantDashboardUrl('commodity') },
+  { key: 'm3', twoLineTitle: true, signals: ['AI', 'GRID', 'CLIMATE', 'MARKET'], chips: ['free', 'free', 'pro', 'pro'], href: variantDashboardUrl('tech') },
   { key: 'm4', twoLineTitle: false, signals: ['CABLE', 'BGP', 'PORTS', 'RISK'], chips: ['free', 'free', 'free', 'free'], href: DASHBOARD_PATH },
 ];
 

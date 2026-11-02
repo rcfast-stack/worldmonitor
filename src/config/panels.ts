@@ -1,5 +1,6 @@
 import type { PanelConfig, MapLayers, DataSourceId } from '@/types';
 import { SITE_VARIANT } from './variant';
+import { SELF_HOST_ALL_PRO } from './self-host';
 // boundary-ignore: isDesktopRuntime is a pure env probe with no service dependencies
 import { isDesktopRuntime } from '@/services/runtime';
 // boundary-ignore: getSecretState is a pure env/keychain probe with no service dependencies
@@ -1305,8 +1306,9 @@ export function restoreFreeMapPanelAccess(
  */
 export function isPanelEntitled(key: string, config: PanelConfig, isPro = false): boolean {
   if (!config.premium) return true;
-  // Dodo entitlements unlock all premium panels
-  if (isEntitled()) return true;
+  // Dodo entitlements unlock all premium panels; so does a self-hosted
+  // all-Pro build, including the 'locked' panels below.
+  if (isEntitled() || SELF_HOST_ALL_PRO) return true;
   const apiKeyPanels = ['stock-analysis', 'stock-backtest', 'daily-market-brief', 'market-implications', 'regional-intelligence', 'deduction', 'chat-analyst', 'wsb-ticker-scanner', 'trade-policy', 'global-procurement'];
   if (apiKeyPanels.includes(key)) {
     return getSecretState('WORLDMONITOR_API_KEY').present || isPro;

@@ -126,6 +126,62 @@ between nginx and the sidecar. It preserves the client's `Authorization`
 header. The transport token does not grant MCP access: operator keys still
 use `X-WorldMonitor-Key`, and OAuth requires the hosted identity services.
 
+## 🔓 Pro for every visitor
+
+A self-hosted stack has no accounts, so by default the dashboard shows Pro
+panels as locked. To unlock them for everyone who reaches your instance, two
+settings must work together:
+
+1. **The server** accepts a request as Pro when it carries an operator key from
+   `WORLDMONITOR_VALID_KEYS`. Have the reverse proxy in front of the stack add
+   that key to every request, so browsers never see it. With Caddy:
+
+   ```caddyfile
+   https://worldmonitor.example.lan {
+       tls internal
+       reverse_proxy worldmonitor:8080 {
+           header_up X-WorldMonitor-Key {$WM_PRO_KEY}
+       }
+   }
+   ```
+
+   Set `WM_PRO_KEY` in Caddy's environment to one of the operator keys, and set
+   `WM_TRUSTED_PROXY_CIDRS` to the proxy's address so per-IP limits see real
+   clients.
+
+2. **The dashboard** unlocks its Pro panels when the image is built with
+   `VITE_SELF_HOST_ALL_PRO=true`. Rebuild after changing it:
+
+   ```bash
+   VITE_SELF_HOST_ALL_PRO=true docker compose build worldmonitor
+   docker compose up -d
+   ```
+
+Things to know before you turn this on:
+
+- Anyone who can reach the proxy gets operator-level access, including MCP.
+  Keep the instance on a private network or behind a VPN.
+- Every visitor shares that key's per-minute limit and daily AI ceiling, and
+  AI features are charged to your own LLM key.
+- Requests that bypass the proxy (for example port 3000 directly) render the
+  Pro panels but their data requests fail with `401`.
+- Accounts, sign-in, billing and OAuth depend on hosted services and stay
+  unavailable.
+
+## 🧭 Variants and links
+
+The Docker image serves every variant (World, Tech, Finance, Commodity, Energy
+and Happy) from whatever host it runs on. The header tabs switch variants in
+place, and each browser remembers its last choice. A hostname that starts with
+`tech.`, `finance.`, `commodity.`, `energy.` or `happy.` opens that variant
+until a different one is picked.
+
+Dashboard links on the reference pages (`/countries/`, `/chokepoints/`,
+`/crises/`, `/tools/` and the rest) and on `/pro` stay on the same host. Links
+to the documentation and the blog still go to worldmonitor.app, which hosts
+them. Canonical and structured-data URLs also keep pointing at
+worldmonitor.app.
+
 ## 🔑 API Keys
 
 Create a `docker-compose.override.yml` to inject your keys. This file is **gitignored** — your secrets stay local.

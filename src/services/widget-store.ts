@@ -3,6 +3,7 @@ import { safeStorageGet } from '@/utils/safe-storage';
 import { clearPanelColSpanEntry, clearPanelSpanEntry } from '@/utils/panel-storage';
 import { getAuthState } from '@/services/auth-state';
 import { isEntitled, getEntitlementState } from '@/services/entitlements';
+import { SELF_HOST_ALL_PRO } from '@/config/self-host';
 import {
   clearBrowserKeySession,
   migrateLegacyKeysToHttpOnlySession,
@@ -230,6 +231,9 @@ export function getBrowserTesterKey(): string {
 }
 
 export function isProWidgetEnabled(): boolean {
+  // A self-hosted all-Pro build grants every visitor the tester-session arm,
+  // which isProUser() and every hasPremiumAccess() caller already honour.
+  if (SELF_HOST_ALL_PRO) return true;
   migrateLegacyKeyStorage();
   return proSessionHint;
 }

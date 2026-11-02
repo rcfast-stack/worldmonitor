@@ -38,6 +38,7 @@ import {
   CANONICAL_FEEDS,
   STORAGE_KEYS,
   SITE_VARIANT,
+  switchesVariantInPlace,
   ALL_PANELS,
   VARIANT_DEFAULTS,
   isPanelInVariantDefaults,
@@ -1072,7 +1073,7 @@ export class PanelLayoutManager implements AppModule {
       <div class="header" role="banner">
         <div class="header-left">
           <div class="variant-switcher">${(() => {
-        const local = this.ctx.isDesktopApp || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        const local = this.ctx.isDesktopApp || switchesVariantInPlace();
         const inIframe = window.self !== window.top;
         const vHref = (v: keyof typeof VARIANT_SWITCHER_DASHBOARD_URLS) =>
           variantSwitcherHref(v, SITE_VARIANT, local);

@@ -24,6 +24,7 @@ const root = resolve(here, '..');
 const read = (path) => readFileSync(resolve(root, path), 'utf8');
 
 const logo = read('pro-test/src/components/Logo.tsx');
+const routes = read('pro-test/src/routes.ts');
 const pressNav = read('pro-test/src/components/PressNav.tsx');
 const app = read('pro-test/src/App.tsx');
 const blogBase = read('blog-site/src/layouts/Base.astro');
@@ -62,7 +63,13 @@ describe('welcome a11y invariants (#7382)', () => {
     // the hash and stayed on /pro (confirmed against production).
     // Unwrapping without forwarding the handler would silently send that
     // click off-site to worldmonitor.app, so Logo takes the destination.
-    assert.match(logo, /href = 'https:\/\/worldmonitor\.app'/, 'Logo keeps the home default');
+    // The default comes from routes.ts so a self-hosted build stays on its host.
+    assert.match(logo, /href = HOME_URL\b/, 'Logo keeps the home default');
+    assert.match(
+      routes,
+      /HOME_URL = SELF_HOSTED \? '\/' : 'https:\/\/worldmonitor\.app'/,
+      'the hosted home default stays worldmonitor.app',
+    );
     assert.match(logo, /href=\{href\}/);
     assert.match(logo, /onClick=\{onClick\}/);
     assert.match(

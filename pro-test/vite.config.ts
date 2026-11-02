@@ -14,6 +14,12 @@ const sentryBuild = getSentryBuildMetadata(pkg.version, process.env.VERCEL_GIT_C
 
 const STATIC_SCRIPT_NONCE = 'wm-static-bootstrap';
 
+// The self-hosted Docker image serves the dashboard from the same host, so the
+// static <a> links in the HTML shells stay on it. Structured data and the
+// WebMCP tool keep the canonical worldmonitor.app URLs.
+const SELF_HOSTED = process.env.VITE_SELF_HOSTED === 'true';
+const HOSTED_DASHBOARD_ANCHOR = /(<a\b[^>]*?\shref=")https:\/\/(?:[a-z]+\.)?worldmonitor\.app(\/dashboard(?:[?#][^"]*)?)"/g;
+
 function isWelcomeHtml(hostId: string) {
   return hostId === 'welcome.html' || hostId.endsWith('/welcome.html');
 }
@@ -31,6 +37,12 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    ...(SELF_HOSTED
+      ? [{
+          name: 'wm-self-hosted-dashboard-links',
+          transformIndexHtml: (html: string) => html.replace(HOSTED_DASHBOARD_ANCHOR, '$1$2"'),
+        }]
+      : []),
     ...(uploadSourceMapsToSentry
       ? [sentryVitePlugin({
           org: 'elie-habib',

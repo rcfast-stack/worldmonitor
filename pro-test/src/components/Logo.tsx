@@ -1,5 +1,6 @@
 import type { MouseEventHandler } from 'react';
 import { Globe, Activity } from 'lucide-react';
+import { HOME_URL } from '../routes';
 
 interface LogoProps {
   /** Destination for the lockup. Defaults to the marketing home. */
@@ -23,7 +24,7 @@ interface LogoProps {
  * too, so unwrapping without forwarding the handler changes where the logo
  * goes.
  */
-export const Logo = ({ href = 'https://worldmonitor.app', onClick }: LogoProps = {}) => (
+export const Logo = ({ href = HOME_URL, onClick }: LogoProps = {}) => (
   <a
     href={href}
     onClick={onClick}

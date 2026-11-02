@@ -10,6 +10,7 @@ import type { CheckoutAttribution } from '../../../shared/checkout-attribution';
 // Static fallback from build-time generation (used while fetching live prices)
 import fallbackTiers from '../generated/tiers.json';
 import { resolveCheckoutProduct } from './pricing-billing-mode';
+import { localizeDashboardHref } from '../routes';
 
 interface Tier {
   name: string;
@@ -153,11 +154,12 @@ function getCtaProps(tier: Tier, billing: 'monthly' | 'annual'): CtaProps {
     // Free tier on an in-product href (e.g. worldmonitor.app dashboard)
     // should open in-place. Only send to a new tab when the href is
     // genuinely off-platform (unusual for free tier but possible).
+    const href = localizeDashboardHref(tier.href);
     return {
       type: 'link',
       label: tier.cta,
-      href: tier.href,
-      external: !isInProductHref(tier.href),
+      href,
+      external: !isInProductHref(href),
     };
   }
   if (tier.cta && tier.href && tier.price === null) {

@@ -6,6 +6,7 @@
 import { execFileSync } from 'node:child_process';
 
 import {
+  existsSync,
   mkdirSync,
   readFileSync,
   readdirSync,
@@ -5616,6 +5617,30 @@ function writeGeneratedFile(outDir, relativePath, content) {
   writeFileSync(target, content);
 }
 
+// A self-hosted install serves /dashboard from the same host as these pages,
+// so their dashboard CTAs must not send readers to the hosted site. Only <a>
+// links change: canonical, pagination and structured-data URLs keep the
+// absolute base on purpose.
+export function relativizeDashboardAnchors(html, baseUrl) {
+  const base = normalizeBaseUrl(baseUrl).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const anchor = new RegExp(`(<a\\b[^>]*?\\shref=")${base}(/dashboard(?:[?#][^"]*)?)"`, 'g');
+  return html.replace(anchor, '$1$2"');
+}
+
+function relativizeGeneratedDashboardLinks(outDir, baseUrl) {
+  for (const dir of GENERATED_DIRS) {
+    const root = join(outDir, dir);
+    if (!existsSync(root)) continue;
+    for (const entry of readdirSync(root, { recursive: true, withFileTypes: true })) {
+      if (!entry.isFile() || !entry.name.endsWith('.html')) continue;
+      const file = join(entry.parentPath, entry.name);
+      const html = readFileSync(file, 'utf8');
+      const next = relativizeDashboardAnchors(html, baseUrl);
+      if (next !== html) writeFileSync(file, next);
+    }
+  }
+}
+
 function routeFile(pathname) {
   const withoutLeading = pathname.replace(/^\/+/, '');
   return join(withoutLeading, 'index.html');
@@ -5732,6 +5757,7 @@ export async function buildCorpus({
   clean = true,
   livePulseSnapshotPath,
   now = Date.now(),
+  relativeDashboardLinks = false,
 } = {}) {
   const data = await loadCorpusData({ rootDir, livePulseSnapshotPath, now });
   const countrySlugByCode = new Map(data.countries.map((country) => [country.code, country.slug]));
@@ -6144,6 +6170,8 @@ export async function buildCorpus({
     );
   });
 
+  if (relativeDashboardLinks) relativizeGeneratedDashboardLinks(outDir, baseUrl);
+
   const manifest = buildManifest({
     data,
     baseUrl,
@@ -6159,11 +6187,15 @@ function parseArgs(argv) {
     outDir: DEFAULT_OUT_DIR,
     baseUrl: DEFAULT_BASE_URL,
     clean: true,
+    // The self-hosted Docker image sets VITE_SELF_HOSTED=true for every build step.
+    relativeDashboardLinks: process.env.VITE_SELF_HOSTED === 'true',
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--no-clean') {
       options.clean = false;
+    } else if (arg === '--relative-dashboard-links') {
+      options.relativeDashboardLinks = true;
     } else if (arg === '--out-dir') {
       options.outDir = resolve(argv[++i]);
     } else if (arg.startsWith('--out-dir=')) {

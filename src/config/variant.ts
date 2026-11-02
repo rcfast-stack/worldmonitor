@@ -1,4 +1,5 @@
 import { isDesktopRuntime } from '@/config/desktop-runtime';
+import { SELF_HOSTED_BUILD } from '@/config/self-host';
 
 /**
  * Every variant a user can switch to. One desktop binary ships and switches
@@ -48,6 +49,12 @@ export const SITE_VARIANT: string = (() => {
   // without a global `location`, and this module must stay importable there.
   const h = window.location?.hostname;
   if (!h) return buildVariant;
+  // A self-hosted build switches variants in place (switchesVariantInPlace),
+  // so the stored choice wins over any hostname prefix.
+  if (SELF_HOSTED_BUILD) {
+    const stored = loadStoredVariant();
+    if (isSiteVariant(stored)) return stored;
+  }
   if (h.startsWith('tech.')) return 'tech';
   if (h.startsWith('finance.')) return 'finance';
   if (h.startsWith('happy.')) return 'happy';
@@ -62,3 +69,13 @@ export const SITE_VARIANT: string = (() => {
 
   return 'full';
 })();
+
+/**
+ * Whether the web variant switcher stores the choice and reloads this page
+ * rather than navigating to the variant's worldmonitor.app subdomain: local
+ * development, and every host a self-hosted build runs on. The desktop app
+ * always switches in place and is checked separately by callers.
+ */
+export function switchesVariantInPlace(hostname: string = window.location.hostname): boolean {
+  return SELF_HOSTED_BUILD || hostname === 'localhost' || hostname === '127.0.0.1';
+}

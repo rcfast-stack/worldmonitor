@@ -16,6 +16,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        # true = every visitor gets the Pro dashboard; pair it with a proxy
+        # that injects an operator key (SELF_HOSTING.md → Pro for every visitor).
+        VITE_SELF_HOST_ALL_PRO: "${VITE_SELF_HOST_ALL_PRO:-}"
     image: worldmonitor:latest
     container_name: worldmonitor
     ports:
